@@ -3,8 +3,6 @@ import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class MessagesService {
-  private subscribers: ((message: any) => void)[] = [];
-
   constructor(private readonly supabaseService: SupabaseService) {}
 
   async getMessages(limit: number = 20, offset: number = 0) {
@@ -23,25 +21,9 @@ export class MessagesService {
     const supabase = this.supabaseService.getClient();
     const { data, error } = await supabase
       .from('messages')
-      .insert([{ sender_id: senderId, content }])
-      .select('*');
+      .insert([{ sender_id: senderId, content }]);
 
     if (error) throw new Error(error.message);
-
-    // ✅ Notificar a los suscriptores del nuevo mensaje
-    if (data && data.length > 0) {
-      this.notifySubscribers(data[0]);
-    }
-
     return data;
-  }
-
-  // ✅ Método para suscribirse a nuevos mensajes
-  subscribe(callback: (message: any) => void) {
-    this.subscribers.push(callback);
-  }
-
-  private notifySubscribers(message: any) {
-    this.subscribers.forEach((callback) => callback(message));
   }
 }
