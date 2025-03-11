@@ -21,9 +21,11 @@ export class MessagesService {
     const supabase = this.supabaseService.getClient();
     const { data, error } = await supabase
       .from('messages')
-      .insert([{ sender_id: senderId, content }]);
-
+      .insert([{ sender_id: senderId, content }])
+      .select('*');
+  
     if (error) throw new Error(error.message);
+  
     return data;
-  }
+  }  
 }
