@@ -102,4 +102,27 @@ export class ContactsService {
     if (error) throw new Error(error.message);
     return data;
   }
+
+  async searchNewContacts(query: string, userId: string) {
+    const supabase = this.supabaseService.getClient();
+  
+    // Obtener contactos existentes del usuario
+    const { data: contacts } = await supabase
+      .from('contacts')
+      .select('contact_id')
+      .or(`user_id.eq.${userId},contact_id.eq.${userId}`);
+  
+    const contactIds = (contacts ?? []).map(c => c.contact_id);
+
+    
+    // Buscar usuarios que NO están en la lista de contactos
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, full_name, email, avatar_url')
+      .not('id', 'in', `(${contactIds.join(',')})`)
+      .or(`email.ilike.%${query}%`)
+      .limit(10);
+  
+    return users;
+  }  
 }

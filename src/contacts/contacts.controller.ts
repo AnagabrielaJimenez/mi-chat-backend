@@ -45,4 +45,12 @@ export class ContactsController {
   async searchContacts(@Query('query') query: string) {
     return this.contactsService.searchContacts(query);
   }
+
+  // ✅ Nuevo endpoint para buscar usuarios que NO son contactos
+  @Get('search-new')
+  async searchNewContacts(@Query('query') query: string, @Req() req: Request) {
+    if (!req.user) throw new Error('Usuario no autenticado');
+    return this.contactsService.searchNewContacts(query, req.user.id);
+  }
+  
 }
