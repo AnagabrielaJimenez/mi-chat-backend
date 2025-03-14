@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UsersController } from './users.controller';
+import { UsersController } from './users.controller'; // ✅ Importamos UsersController
+import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
+  imports: [SupabaseModule],
+  controllers: [UsersController], // ✅ Se agrega UsersController
   providers: [UsersService],
-  controllers: [UsersController],
-  exports: [UsersService], // 🔹 Permite que otros módulos usen este servicio
+  exports: [UsersService], // ✅ Exportamos para que AuthModule pueda usarlo
 })
 export class UsersModule {}

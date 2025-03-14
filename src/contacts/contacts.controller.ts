@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Query, Body, Req, Param, UseGuards } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
 import { AuthGuard } from '../auth/auth.guard'; // ✅ Middleware de autenticación
 import { Request } from 'express';
@@ -12,20 +12,34 @@ export class ContactsController {
   @Get()
   async getContacts(@Req() req: Request) {
     if (!req.user) {
-      throw new Error('Usuario no autenticado'); // ❌ Maneja el caso donde req.user sea undefined
+      throw new Error('Usuario no autenticado');
     }
-    console.log('Usuario autenticado:', req.user);
     return this.contactsService.getContacts(req.user.id);
   }
 
+  // ✅ Agregar un nuevo contacto
   @Post()
-  async addContact(@Req() req, @Body() body: { contactId: string }) {
+  async addContact(@Req() req, @Body() body: any) {
     if (!req.user) {
-      throw new Error('Usuario no autenticado');
+        throw new Error('Usuario no autenticado');
     }
-    return this.contactsService.addContact(req.user.id, body.contactId);
+
+    const contactId = body.contact_id; // ✅ Asegurar que se extrae correctamente
+
+    if (!contactId) {
+        throw new Error('El campo contact_id es obligatorio');
+    }
+
+    return this.contactsService.addContact(req.user.id, contactId);
   }
-  
+
+
+  // ✅ Actualizar estado del contacto (aceptar/rechazar)
+  @Put(':id')
+  async updateContact(@Param('id') id: string, @Body() body: { status: string }) {
+    return this.contactsService.updateContactStatus(id, body.status);
+  }
+
   // ✅ Buscar contactos por nombre o correo
   @Get('search')
   async searchContacts(@Query('query') query: string) {

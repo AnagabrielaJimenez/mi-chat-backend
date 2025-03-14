@@ -17,15 +17,16 @@ export class MessagesService {
     return data;
   }
 
-  async sendMessage(senderId: string, content: string) {
+  async sendMessage(senderId: string, receiverId: string, content: string) {
+    if (!receiverId) throw new Error('El mensaje debe tener un destinatario');
+  
     const supabase = this.supabaseService.getClient();
     const { data, error } = await supabase
       .from('messages')
-      .insert([{ sender_id: senderId, content }])
+      .insert([{ sender_id: senderId, receiver_id: receiverId, content }])
       .select('*');
   
     if (error) throw new Error(error.message);
-  
-    return data;
+    return data[0];
   }  
 }
