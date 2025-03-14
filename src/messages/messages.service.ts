@@ -5,17 +5,24 @@ import { SupabaseService } from '../supabase/supabase.service';
 export class MessagesService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async getMessages(limit: number = 20, offset: number = 0) {
+  async getMessages(userId: string, contactId: string) {
     const supabase = this.supabaseService.getClient();
+    console.log(`📩 Buscando mensajes entre ${userId} y ${contactId}`);
+  
     const { data, error } = await supabase
       .from('messages')
       .select('*')
-      .order('created_at', { ascending: true })
-      .range(offset, offset + limit - 1);
-
+      .or(
+        `and(sender_id.eq.${userId},receiver_id.eq.${contactId}),` +
+        `and(sender_id.eq.${contactId},receiver_id.eq.${userId})`
+      ) // ✅ Solo mensajes entre ambos usuarios
+      .order('created_at', { ascending: true });
+  
     if (error) throw new Error(error.message);
+  
+    console.log('✅ Mensajes encontrados:', data);
     return data;
-  }
+  }         
 
   async sendMessage(senderId: string, receiverId: string, content: string) {
     if (!receiverId) throw new Error('El mensaje debe tener un destinatario');
